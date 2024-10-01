@@ -9,18 +9,20 @@ def eprint(sToPrint: str = ""):
     print(sToPrint, file=sys.stderr)
 
 saFormats: list[str] = [".epub", ".fb2", ".modi"]
-epubNamespacesMap = {
-   "calibre":"http://calibre.kovidgoyal.net/2009/metadata",
-   "dc":"http://purl.org/dc/elements/1.1/",
-   "dcterms":"http://purl.org/dc/terms/",
-   "opf":"http://www.idpf.org/2007/opf",
-   "u":"urn:oasis:names:tc:opendocument:xmlns:container",
-   "xsi":"http://www.w3.org/2001/XMLSchema-instance",
-   "xhtml":"http://www.w3.org/1999/xhtml"
-}
 
 def save_epub_cover(sFile: str, sFileTo: str, npImageHeight: int) -> int:
     '''Based on https://github.com/Alamot/code-snippets/blob/master/epub/epub-show-cover.py'''
+
+    epubNamespacesMap = {
+       "calibre":"http://calibre.kovidgoyal.net/2009/metadata",
+       "dc":"http://purl.org/dc/elements/1.1/",
+       "dcterms":"http://purl.org/dc/terms/",
+       "opf":"http://www.idpf.org/2007/opf",
+       "u":"urn:oasis:names:tc:opendocument:xmlns:container",
+       "xsi":"http://www.w3.org/2001/XMLSchema-instance",
+       "xhtml":"http://www.w3.org/1999/xhtml"
+    }
+
     with zipfile.ZipFile(sFile) as epubBook:
         readedFromArchive = etree.fromstring(epubBook.read("META-INF/container.xml"))
         pathRootfile =  readedFromArchive.xpath(
@@ -81,8 +83,7 @@ def save_epub_cover(sFile: str, sFileTo: str, npImageHeight: int) -> int:
         imageCover = Image.open(epubBook.open(pathCover))
         if npImageHeight:
             nImageSizeTuple = imageCover.size
-            nvImageHeight = max(nImageSizeTuple)
-            nScaleRatio = ceil(nvImageHeight / npImageHeight)
+            nScaleRatio = ceil(max(nImageSizeTuple) / npImageHeight)
             imageCover = imageCover.resize(
                 (nImageSizeTuple[0] // nScaleRatio, nImageSizeTuple[1] // nScaleRatio)
                 , Image.LANCZOS)
@@ -92,12 +93,12 @@ def save_epub_cover(sFile: str, sFileTo: str, npImageHeight: int) -> int:
 
 def save_cover(sFile: str, sFileTo: str, npImageHeight: int) -> int:
     if '.' not in sFile:
-        eprint(f"Can't find format of \'{sFile}\'")
+        eprint(f"File '{sFile}' doesn't have format. Abort")
         return 1
 
     sFileExt: str = sFile[-(sFile[-1::-1].index('.') + 1):]
     if sFileExt not in saFormats:
-        eprint(f"Can't recognize \'{sFileExt}\' format")
+        eprint(f"Can't recognize '{sFileExt}' format. Abort")
         return 1
 
     match sFileExt:
@@ -113,6 +114,10 @@ def save_cover(sFile: str, sFileTo: str, npImageHeight: int) -> int:
     return 0
 
 
+def extract_data(sFile: str) -> int:
+    pass
+
+
 def main() -> int:
     saArgs: list[str] = sys.argv
     match len(saArgs):
@@ -120,11 +125,10 @@ def main() -> int:
             eprint("Data extraction is not implemented yet")
             return 1
         case 4 | 5 if saArgs[1] == 'c':
-            nvImageHeight = int(0 if len(saArgs) == 4 else saArgs[4])
             return save_cover(
                 sFile = saArgs[2]
                 ,sFileTo = saArgs[3]
-                ,npImageHeight = nvImageHeight)
+                ,npImageHeight = int(0 if len(saArgs) == 4 else saArgs[4]))
         case _:
             eprint("I don't know what you want")
             return 1
