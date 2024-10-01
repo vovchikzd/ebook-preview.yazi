@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 
-import os, sys, zipfile
+import os, sys, zipfile, lxml
 from lxml import etree
 from PIL import Image
+from math import ceil
+
+def eprint(sToPrint: str = ""):
+    print(sToPrint, file=sys.stderr)
 
 saFormats: list[str] = [".epub", ".fb2", ".modi"]
 epubNamespacesMap = {
@@ -15,7 +19,7 @@ epubNamespacesMap = {
    "xhtml":"http://www.w3.org/1999/xhtml"
 }
 
-def save_epub_cover(sFile: str, sFileTo: str) -> int:
+def save_epub_cover(sFile: str, sFileTo: str, npImageHeight: int) -> int:
     '''Based on https://github.com/Alamot/code-snippets/blob/master/epub/epub-show-cover.py'''
     with zipfile.ZipFile(sFile) as epubBook:
         readedFromArchive = etree.fromstring(epubBook.read("META-INF/container.xml"))
@@ -70,29 +74,41 @@ def save_epub_cover(sFile: str, sFileTo: str) -> int:
                 pass
 
         if not hrefCover:
-            print("Cover image not found.")  
+            eprint("Cover image not found.")  
             return 1
+
         pathCover = os.path.join(os.path.dirname(pathRootfile), hrefCover)
-        Image.open(epubBook.open(pathCover)).save(sFileTo)
+        imageCover = Image.open(epubBook.open(pathCover))
+        if npImageHeight:
+            nImageSizeTuple = imageCover.size
+            nvImageHeight = max(nImageSizeTuple)
+            nScaleRatio = ceil(nvImageHeight / npImageHeight)
+            imageCover = imageCover.resize(
+                (nImageSizeTuple[0] // nScaleRatio, nImageSizeTuple[1] // nScaleRatio)
+                , Image.LANCZOS)
+        imageCover.save(sFileTo, quality=20, optimize=True)
         return 0
 
 
-
-def save_cover(sFile: str, sFileTo: str) -> int:
+def save_cover(sFile: str, sFileTo: str, npImageHeight: int) -> int:
     if '.' not in sFile:
-        print(f"Can't find extension of \'{sFile}\'", file=sys.stderr)
+        eprint(f"Can't find format of \'{sFile}\'")
         return 1
 
     sFileExt: str = sFile[-(sFile[-1::-1].index('.') + 1):]
     if sFileExt not in saFormats:
-        print(f"Can't recognize extension of \'{sFile}\'", file=sys.stderr)
+        eprint(f"Can't recognize \'{sFileExt}\' format")
         return 1
 
     match sFileExt:
         case '.epub':
-            return save_epub_cover(sFile, sFileTo)
+            return save_epub_cover(
+                sFile = sFile
+                ,sFileTo = sFileTo
+                ,npImageHeight = npImageHeight)
         case '.fb2' | '.mobi':
-            print(f"{sFileExt} format not supported yet", file=sys.stderr)
+            eprint(f"{sFileExt} format is not supported yet")
+            return 1
 
     return 0
 
@@ -101,11 +117,16 @@ def main() -> int:
     saArgs: list[str] = sys.argv
     match len(saArgs):
         case 3 if saArgs[1] == 'd':
-            print("Not implemented yet", file=sys.stderr)
+            eprint("Data extraction is not implemented yet")
             return 1
-        case 4 if saArgs[1] == 'c':
-            return save_cover(saArgs[2], saArgs[3])
+        case 4 | 5 if saArgs[1] == 'c':
+            nvImageHeight = int(0 if len(saArgs) == 4 else saArgs[4])
+            return save_cover(
+                sFile = saArgs[2]
+                ,sFileTo = saArgs[3]
+                ,npImageHeight = nvImageHeight)
         case _:
+            eprint("I don't know what you want")
             return 1
 
 
