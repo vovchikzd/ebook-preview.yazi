@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import os, sys, zipfile, lxml
+import os, sys, zipfile, io, base64, chardet
 from lxml import etree
 from PIL import Image
 from math import ceil
@@ -83,10 +83,76 @@ def save_epub_cover(sFile: str, sFileTo: str, npImageHeight: int) -> int:
         imageCover = Image.open(epubBook.open(pathCover))
         if npImageHeight:
             nImageSizeTuple = imageCover.size
-            nScaleRatio = ceil(max(nImageSizeTuple) / npImageHeight)
-            imageCover = imageCover.resize(
-                (nImageSizeTuple[0] // nScaleRatio, nImageSizeTuple[1] // nScaleRatio)
-                , Image.LANCZOS)
+            nMaxImageSize = max(nImageSizeTuple)
+            if nMaxImageSize > npImageHeight:
+                nScaleRatio = ceil(nMaxImageSize / npImageHeight)
+                imageCover = imageCover.resize(
+                    (nImageSizeTuple[0] // nScaleRatio, nImageSizeTuple[1] // nScaleRatio)
+                    , Image.LANCZOS)
+        imageCover.save(sFileTo, quality=20, optimize=True, format="PNG")
+        return 0
+
+
+def get_fb2_encoding(sFile: str) -> str | None:
+    with open(sFile, 'rb') as file:
+        detector = chardet.universaldetector.UniversalDetector()
+        for line in file:
+            detector.feed(line)
+            if detector.done:
+                break
+        detector.close()
+    return detector.result['encoding']
+        
+
+
+def save_fb2_cover(sFile: str, sFileTo: str, npImageHeight: int) -> int:
+
+    fb2NamespacesMap = {
+        "xs":"http://www.gribuser.ru/xml/fictionbook/2.0"
+        ,"l":"http://www.w3.org/1999/xlink"
+    }
+
+    sEncoding = get_fb2_encoding(sFile)
+
+    if sEncoding is None:
+        eprint("Can't figure out what encoding of file")
+        return 1
+
+    with open(sFile, "r", encoding=sEncoding) as fb2File:
+        readedFile = etree.XML(bytes(bytearray(fb2File.read(), encoding=sEncoding)))
+        try:
+            imageIndex = readedFile.xpath(
+                "/xs:FictionBook/xs:description/xs:title-info/xs:coverpage/xs:image"
+                , namespaces=fb2NamespacesMap
+            )[0].get(f"{{{fb2NamespacesMap['l']}}}href")[1:]
+        except IndexError:
+            pass
+
+        if imageIndex is None:
+            eprint("Cover image not found")
+            return 1
+
+        try:
+            imageBytes = readedFile.xpath(
+                f"/xs:FictionBook/xs:binary[@id='{imageIndex}']"
+                ,namespaces=fb2NamespacesMap
+            )[0].text
+        except IndexError:
+            pass
+
+        if imageBytes is None:
+            eprint("Cover image not found")
+            return 1
+
+        imageCover = Image.open(io.BytesIO(base64.b64decode(imageBytes)))
+        if npImageHeight:
+            nImageSizeTuple = imageCover.size
+            nMaxImageSize = max(nImageSizeTuple)
+            if nMaxImageSize > npImageHeight:
+                nScaleRatio = ceil(nMaxImageSize / npImageHeight)
+                imageCover = imageCover.resize(
+                    (nImageSizeTuple[0] // nScaleRatio, nImageSizeTuple[1] // nScaleRatio)
+                    , Image.LANCZOS)
         imageCover.save(sFileTo, quality=20, optimize=True, format="PNG")
         return 0
 
@@ -107,7 +173,13 @@ def save_cover(sFile: str, sFileTo: str, npImageHeight: int) -> int:
                 sFile = sFile
                 ,sFileTo = sFileTo
                 ,npImageHeight = npImageHeight)
-        case '.fb2' | '.mobi':
+        case '.fb2':
+            return save_fb2_cover(
+                sFile = sFile
+                , sFileTo = sFileTo
+                , npImageHeight = npImageHeight
+            )
+        case '.mobi':
             eprint(f"{sFileExt} format is not supported yet")
             return 1
 
