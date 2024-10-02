@@ -87,7 +87,7 @@ def save_epub_cover(sFile: str, sFileTo: str, npImageHeight: int) -> int:
             imageCover = imageCover.resize(
                 (nImageSizeTuple[0] // nScaleRatio, nImageSizeTuple[1] // nScaleRatio)
                 , Image.LANCZOS)
-        imageCover.save(sFileTo, quality=20, optimize=True)
+        imageCover.save(sFileTo, quality=20, optimize=True, format="PNG")
         return 0
 
 
