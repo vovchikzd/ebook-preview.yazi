@@ -93,18 +93,6 @@ def save_epub_cover(sFile: str, sFileTo: str, npImageHeight: int) -> int:
         return 0
 
 
-def get_fb2_encoding(sFile: str) -> str | None:
-    with open(sFile, 'rb') as file:
-        detector = chardet.universaldetector.UniversalDetector()
-        for line in file:
-            detector.feed(line)
-            if detector.done:
-                break
-        detector.close()
-    return detector.result['encoding']
-        
-
-
 def save_fb2_cover(sFile: str, sFileTo: str, npImageHeight: int) -> int:
 
     fb2NamespacesMap = {
@@ -112,14 +100,8 @@ def save_fb2_cover(sFile: str, sFileTo: str, npImageHeight: int) -> int:
         ,"l":"http://www.w3.org/1999/xlink"
     }
 
-    sEncoding = get_fb2_encoding(sFile)
-
-    if sEncoding is None:
-        eprint("Can't figure out what encoding of file")
-        return 1
-
-    with open(sFile, "r", encoding=sEncoding) as fb2File:
-        readedFile = etree.XML(bytes(bytearray(fb2File.read(), encoding=sEncoding)))
+    with open(sFile, "rb") as fb2File:
+        readedFile = etree.fromstring(fb2File.read())
         try:
             imageIndex = readedFile.xpath(
                 "/xs:FictionBook/xs:description/xs:title-info/xs:coverpage/xs:image"
