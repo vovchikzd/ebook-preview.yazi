@@ -1,5 +1,3 @@
-local M = {}
-
 local skip_labels = {
   ["Publisher"] = true,
   ["Tags"] = true,
@@ -11,6 +9,8 @@ local skip_labels = {
   ["Title sort"] = true,
   ["Rating"] = true,
 }
+
+local M = {}
 
 function M:peek()
   local image_height = 0
@@ -80,7 +80,7 @@ end
 function M:seek(units)
   local h = cx.active.current.hovered
 	if h and h.url == self.file.url then
-		local step = math.floor(units * self.area.h / 10)
+		local step = math.floor(units * self.area.h / 200)
 		ya.manager_emit("peek", {
 			math.max(0, cx.active.preview.skip + step),
 			only_if = self.file.url,
@@ -103,7 +103,7 @@ function M:preload()
 	}):spawn()
 
 	if not child then
-		ya.err("spawn `ebook-preview` command returns " .. tostring(code))
+		ya.err("spawn `get-ebook-cover` command returns " .. tostring(code))
 		return 0
 	end
 
