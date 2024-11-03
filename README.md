@@ -14,7 +14,7 @@ git clone https://github.com/vovchikzd/ebook-preview.yazi.git ~/.config/yazi/plu
 ```
 Make sure you have this folder or link to `get-ebook-cover.py` in your `PATH`.
 
-`install.sh` creates symbolic link in /usr/bin/
+`install.sh` creates symbolic link in `/usr/bin/`
 
 ## Usage
 Add this to your `yazi.toml`:
