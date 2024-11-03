@@ -7,7 +7,6 @@ function M:peek()
 	end
 
 	if self:preload() == 1 then
-    ya.err("cache: " .. tostring(cache))
 		ya.image_show(cache, self.area)
 		ya.preview_widgets(self, {})
 	end
@@ -23,11 +22,9 @@ function M:preload()
 
 	local size = math.min(PREVIEW.max_width, PREVIEW.max_height)
 
-	local child, code = Command("/home/vovchik/Disks/1Tb/projects/ebook-preview.yazi/ebook-preview.py"):args({
-    "c",
+	local child, code = Command("ebook-meta"):args({
+    "--get-cover=" .. tostring(cache),
 		tostring(self.file.url),
-		tostring(cache),
-		tostring(size),
 	}):spawn()
 
 	if not child then
