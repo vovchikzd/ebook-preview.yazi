@@ -5,7 +5,11 @@ local skip_labels = {
   ["Tags"] = true,
   ["Identifiers"] = true,
   ["Published"] = true,
-  ["Series"] = true
+  ["Series"] = true,
+  ["Book Producer"] = true,
+  ["Rights"] = true,
+  ["Title sort"] = true,
+  ["Rating"] = true,
 }
 
 function M:peek()
@@ -29,15 +33,21 @@ function M:peek()
     for str in output.stdout:gmatch("[^\n]*") do
       local label, value = str:match("(.*[^ ]) +: (.*)")
       local line
-      if label and value ~= "" then
+      if label then
         if not skip_labels[label] then
           if label == "Comments" then
             label = "Summary"
+            value = string.gsub(value, '<[^>]+>', "")
+            value = string.gsub(value, '&[a-z0-9]+;', ' ')
+            value = string.gsub(value, '&#[0-9]+;', ' ')
+            value = string.gsub(value, '&#[0-9a-f]+;', ' ')
           end
-          line = ui.Line({
-            ui.Span(label .. ": "):bold(),
-            ui.Span(value)
-          })
+          if value ~= "" then
+            line = ui.Line({
+              ui.Span(label .. ": "):bold(),
+              ui.Span(value)
+            })
+          end
         end
       end
 
