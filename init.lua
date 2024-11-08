@@ -1,13 +1,27 @@
 local skip_labels = {
-  ["Publisher"] = true,
-  ["Tags"] = true,
-  ["Identifiers"] = true,
-  ["Published"] = true,
-  ["Series"] = true,
-  ["Book Producer"] = true,
-  ["Rights"] = true,
-  ["Title sort"] = true,
-  ["Rating"] = true,
+  ["Publisher"] = true
+  , ["Tags"] = true
+  , ["Identifiers"] = true
+  , ["Published"] = true
+  , ["Series"] = true
+  , ["Book Producer"] = true
+  , ["Rights"] = true
+  , ["Title sort"] = true
+  , ["Rating"] = true
+  , ["ABC"] = true
+  , ["author_fullsort"] = true
+  , ["ereader"] = true
+  , ["title_fullsort"] = true
+  , ["Words"] = true
+  , ["Pages"] = true
+  , ["mr_sort"] = true
+  , ["jacket"] = true
+  , ["Fixed"] = true
+  , ["Grade"] = true
+  , ["Identified"] = true
+  , ["isbn_asin"] = true
+  , ["isbn_isbn"] = true
+  , ["isbn_isbnp"] = true
 }
 
 local M = {}
