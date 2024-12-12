@@ -12,8 +12,8 @@ def print_usage():
     eprint("Usage: get-ebook-cover INPUT_FILE OUTPUT_FILE MIN_SIZE")
     eprint()
     eprint("     INPUT_FILE:  ebook file")
-    eprint("     OUTPUT_FILE: output image file, required when subcommand is 'c'")
-    eprint("     MIN_SIZE:    min area size to fit image, required when subcommand is 'c'")
+    eprint("     OUTPUT_FILE: output image file")
+    eprint("     MIN_SIZE:    min area size to fit image")
 
 
 def getCover(bookFile: str, cache: str, minAreaSize: int) -> int:

@@ -1,3 +1,5 @@
+# Work only in yazi < 0.4
+
 # ebook-preview.yazi
 [Yazi](https://github.com/sxyazi/yazi) plugin to preview ebook files
 
