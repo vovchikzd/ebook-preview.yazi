@@ -26,18 +26,18 @@ local skip_labels = {
 
 local M = {}
 
-function M:peek()
+function M:peek(job)
   local image_height = 0
 
-	if self:preload() == 1 then
-    local cache = ya.file_cache(self)
-    if cache and fs.cha(cache).length > 0 then
-      image_height = ya.image_show(cache, self.area).h
+	if self:preload(job) == 1 then
+    local cache = ya.file_cache(job)
+    if cache and fs.cha(cache).len > 0 then
+      image_height = ya.image_show(cache, job.area).h
     end
 	end
 
   local output, code = Command("ebook-meta"):args({
-    tostring(self.file.url)
+    tostring(job.file.url)
   }):stdout(Command.PIPED):output()
 
   local lines = {}
@@ -58,7 +58,7 @@ function M:peek()
           end
           if value ~= "" then
             line = ui.Line({
-              ui.Span(label .. ": "):bold(),
+              ui.Span(label .. ": "):style(ui.Style():bold()),
               ui.Span(value)
             })
           end
@@ -66,10 +66,10 @@ function M:peek()
       end
 
       if line then
-        if i >= self.skip then
+        if i >= job.skip then
           table.insert(lines, line)
         end
-        local max_width = math.max(1, self.area.w - 3)
+        local max_width = math.max(1, job.area.w - 3)
         i = i + math.max(1, math.ceil(line:width() / max_width))
       end
     end
@@ -78,32 +78,31 @@ function M:peek()
     table.insert(lines, ui.Line(error))
   end
 
-  ya.preview_widgets(self, {
-    ui.Paragraph(
-      ui.Rect({
-        x = self.area.x,
-        y = self.area.y + image_height,
-        w = self.area.w,
-        h = self.area.h - image_height,
-      }),
-      lines
-    ):wrap(ui.Paragraph.WRAP),
+  ya.preview_widgets(job, {
+    ui.Text(lines)
+    :area(ui.Rect({
+        x = job.area.x,
+        y = job.area.y + image_height,
+        w = job.area.w,
+        h = job.area.h - image_height,
+      }))
+      :wrap(ui.Text.WRAP)
   })
 end
 
-function M:seek(units)
+function M:seek(job)
   local h = cx.active.current.hovered
-	if h and h.url == self.file.url then
-		local step = math.floor(units * self.area.h / 200)
+	if h and h.url == job.file.url then
 		ya.manager_emit("peek", {
-			math.max(0, cx.active.preview.skip + step),
-			only_if = self.file.url,
+			math.max(0, cx.active.preview.skip + job.units),
+			only_if = job.file.url,
 		})
 	end
 end
 
-function M:preload()
-	local cache = ya.file_cache(self)
+function M:preload(job)
+
+	local cache = ya.file_cache(job)
 	if not cache or fs.cha(cache) then
 		return 1
 	end
@@ -111,7 +110,7 @@ function M:preload()
 	local size = math.min(PREVIEW.max_width, PREVIEW.max_height)
 
 	local child, code = Command("get-ebook-cover"):args({
-		tostring(self.file.url),
+		tostring(job.file.url),
     tostring(cache),
     tostring(size)
 	}):spawn()
