@@ -17,7 +17,7 @@ def print_usage():
 
 
 def getCover(bookFile: str, cache: str, minAreaSize: int) -> int:
-    cacheTmp: str = f"{cache}.tmp"
+    cacheTmp: str = f"{cache}.ebook-preview"
     subprocess.run(["ebook-meta", f"--get-cover={cacheTmp}", bookFile], capture_output=True)
     imageCover = Image.open(cacheTmp)
     imageSizeTuple = imageCover.size
@@ -29,7 +29,6 @@ def getCover(bookFile: str, cache: str, minAreaSize: int) -> int:
             , Image.LANCZOS
         )
     imageCover.save(cache, quality=20, optimize=True, format="PNG")
-    os.remove(cacheTmp)
 
 
 def main() -> int:
