@@ -58,7 +58,7 @@ function M:peek(job)
           end
           if value ~= "" then
             line = ui.Line({
-              ui.Span(label .. ": "):style(ui.Style():bold()),
+              ui.Span(label .. ": "):style(ui.Style():bold():fg("blue")),
               ui.Span(value)
             })
           end
