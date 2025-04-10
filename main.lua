@@ -102,12 +102,12 @@ end
 
 function M:preload(job)
 
-	local cache = ya.file_cache(job)
+	local cache = ya.file_cache({ file = job.file, skip = 0 })
 	if not cache or fs.cha(cache) then
 		return 1
 	end
 
-	local size = math.min(PREVIEW.max_width, PREVIEW.max_height)
+	local size = math.max(job.area.h, job.area.w) * 8
 
 	local child, code = Command("get-ebook-cover"):args({
 		tostring(job.file.url),
