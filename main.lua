@@ -107,7 +107,7 @@ function M:preload(job)
 		return 1
 	end
 
-	local size = math.max(job.area.h, job.area.w) * 8
+	local size = math.ceil(math.min(job.area.h, job.area.w) * 2.54 * 3.79381)
 
 	local child, code = Command("get-ebook-cover"):args({
 		tostring(job.file.url),
