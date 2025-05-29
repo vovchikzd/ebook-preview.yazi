@@ -36,7 +36,7 @@ function M:peek(job)
     end
 	end
 
-  local output, code = Command("ebook-meta"):args({
+  local output, code = Command("ebook-meta"):arg({
     tostring(job.file.url)
   }):stdout(Command.PIPED):output()
 
@@ -109,7 +109,7 @@ function M:preload(job)
 
 	local size = math.ceil(math.min(job.area.h, job.area.w) * 2.54 * 3.79381)
 
-	local child, code = Command("get-ebook-cover"):args({
+	local child, code = Command("get-ebook-cover"):arg({
 		tostring(job.file.url),
     tostring(cache),
     tostring(size)
