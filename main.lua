@@ -78,7 +78,7 @@ function M:peek(job)
     table.insert(lines, ui.Line(error))
   end
 
-  ya.preview_widgets(job, {
+  ya.preview_widget(job, {
     ui.Text(lines)
     :area(ui.Rect({
         x = job.area.x,
@@ -86,7 +86,7 @@ function M:peek(job)
         w = job.area.w,
         h = job.area.h - image_height,
       }))
-      :wrap(ui.Text.WRAP)
+      :wrap(ui.Wrap.YES)
   })
 end
 
